@@ -1,0 +1,13 @@
+public/
+dist/
+node_modules
+.DS_Store
+.wrangler/
+
+# Production repository: intermediates belong outside this checkout.
+work/
+outputs/
+_old/
+*.tar
+*.zip
+.idea
