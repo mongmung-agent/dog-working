@@ -1,4 +1,5 @@
 import type { ThemeId } from './themes';
+import { assetUrl } from './base-path';
 
 type Track = {
   theme: ThemeId;
@@ -53,7 +54,7 @@ export class ThemeMusic {
       const audio = new Audio();
       audio.preload = 'none';
       audio.loop = true;
-      audio.src = `/music/${theme}.m4a?v=gemini-1`;
+      audio.src = assetUrl(`/music/${theme}.m4a?v=gemini-1`);
       const source = this.context.createMediaElementSource(audio),
         gain = this.context.createGain();
       gain.gain.value = 0;

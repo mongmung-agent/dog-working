@@ -1,5 +1,6 @@
 import type { Facing, Pet, PetState } from './core';
 import { assets } from './assets';
+import { assetUrl } from './base-path';
 import {
   layoutFrames,
   layoutMotionFrames,
@@ -100,7 +101,7 @@ function sheet(key: string, rowCount = 5, columnCount = 4) {
 const petKeys = ['minky', 'mongsil'] as const;
 async function actionSheet(key: string, facing: 'left' | 'right', panel: MotionPanel) {
   const image = new Image();
-  image.src = `/pets/${panel}/${key}-${facing}.webp`;
+  image.src = assetUrl(`/pets/${panel}/${key}-${facing}.webp`);
   await image.decode();
   const source = document.createElement('canvas');
   source.width = image.width;

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { startMeadow } from './game/runtime';
 import { THEMES } from './game/themes';
+import { assetUrl } from './game/base-path';
 
 function Icon({ name }: { name: string }) {
   return (
@@ -73,7 +74,13 @@ export default function App() {
             aria-label="공 굴리기, 드래그로 옮기기"
             hidden
           >
-            <img src="/toys/ball.svg?v=2" width="36" height="36" alt="" draggable="false" />
+            <img
+              src={assetUrl('/toys/ball.svg?v=2')}
+              width="36"
+              height="36"
+              alt=""
+              draggable="false"
+            />
           </button>
           <div id="arrival" aria-hidden="true">
             <span></span>
@@ -93,7 +100,7 @@ export default function App() {
           aria-pressed="false"
           title="공 꺼내기"
         >
-          <img src="/toys/ball.svg?v=2" width="24" height="24" alt="" />
+          <img src={assetUrl('/toys/ball.svg?v=2')} width="24" height="24" alt="" />
         </button>
         <footer className="dock">
           <div id="call-controls" role="group" aria-label="친구 부르기" hidden>
