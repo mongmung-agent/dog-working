@@ -21,7 +21,7 @@ export const THEMES = [
   },
   {
     id: 'apartment',
-    thumbnail: '/themes/thumbnails/apartment.webp',
+    thumbnail: assetUrl('/themes/thumbnails/apartment.webp'),
     name: '벚꽃 단지 산책길',
     image: assetUrl('/themes/apartment.webp'),
   },
