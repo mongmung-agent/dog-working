@@ -1,6 +1,7 @@
-import { ART_SPACE } from './layout/art-layout'
-import type { Facing, Pet, PetState } from './engine/core'
-import { assets } from './const/assets'
+import { ART_SPACE } from './layout/art-layout';
+import type { Facing, Pet, PetState } from './engine/core';
+import { assets } from './const/assets';
+import { assetUrl } from './base-path';
 import {
   treatMouthHeight,
   layoutFrames,
@@ -12,140 +13,140 @@ import {
   motionSkulls,
   profiles,
   type ArtBox,
-} from './layout/art-layout'
-import { motionKeypose, motionFrame, passiveFrame, type MotionPanel } from './engine/motion'
-import { registerPawAnchor } from './engine/toys'
+} from './layout/art-layout';
+import { motionKeypose, motionFrame, passiveFrame, type MotionPanel } from './engine/motion';
+import { registerPawAnchor } from './engine/toys';
 
-type Bounds = { x: number; y: number; w: number; h: number }
-type ArtCanvas = HTMLCanvasElement & { artBounds?: Bounds }
-const sheets: Record<string, ArtCanvas[][]> = {}
-const originalSkullHeights: Record<string, number> = {}
-const movementScales: Record<string, number> = {}
+type Bounds = { x: number; y: number; w: number; h: number };
+type ArtCanvas = HTMLCanvasElement & { artBounds?: Bounds };
+const sheets: Record<string, ArtCanvas[][]> = {};
+const originalSkullHeights: Record<string, number> = {};
+const movementScales: Record<string, number> = {};
 // Enabled only after identity and frame review of the replacement set.
-const motionArtworkEnabled = true
-const actions: Record<string, ArtCanvas[][]> = {}
+const motionArtworkEnabled = true;
+const actions: Record<string, ArtCanvas[][]> = {};
 type MotionSource = {
-  key: string
-  facing: 'left' | 'right'
-  panel: MotionPanel
-  source: HTMLCanvasElement
-  boxes: ArtBox[][]
-}
-const motionSources: MotionSource[] = []
-let loadError: Error | null = null
+  key: string;
+  facing: 'left' | 'right';
+  panel: MotionPanel;
+  source: HTMLCanvasElement;
+  boxes: ArtBox[][];
+};
+const motionSources: MotionSource[] = [];
+let loadError: Error | null = null;
 
 function sheet(key: string, rowCount = 5, columnCount = 4) {
   return new Promise<void>((resolve, reject) => {
-    const image = new Image()
-    image.onerror = () => reject(new Error(`${key} image failed`))
+    const image = new Image();
+    image.onerror = () => reject(new Error(`${key} image failed`));
     image.onload = () => {
       try {
-        const source = document.createElement('canvas')
-        source.width = image.width
-        source.height = image.height
-        const context = source.getContext('2d', { willReadFrequently: true })!
-        context.drawImage(image, 0, 0)
-        const data = context.getImageData(0, 0, image.width, image.height).data
+        const source = document.createElement('canvas');
+        source.width = image.width;
+        source.height = image.height;
+        const context = source.getContext('2d', { willReadFrequently: true })!;
+        context.drawImage(image, 0, 0);
+        const data = context.getImageData(0, 0, image.width, image.height).data;
         const boxes: ArtBox[][] = Array.from({ length: rowCount }, (_, row) =>
           Array.from({ length: columnCount }, (_, column) => {
             const sx = Math.round((image.width * column) / columnCount),
-              ex = Math.round((image.width * (column + 1)) / columnCount)
+              ex = Math.round((image.width * (column + 1)) / columnCount);
             const sy = Math.round((image.height * row) / rowCount),
-              ey = Math.round((image.height * (row + 1)) / rowCount)
+              ey = Math.round((image.height * (row + 1)) / rowCount);
             let left = ex,
               right = -1,
               top = ey,
-              bottom = -1
+              bottom = -1;
             for (let y = sy; y < ey; y++)
               for (let x = sx; x < ex; x++) {
                 if (data[(y * image.width + x) * 4 + 3] > 128) {
-                  left = Math.min(left, x)
-                  right = Math.max(right, x)
-                  top = Math.min(top, y)
-                  bottom = Math.max(bottom, y)
+                  left = Math.min(left, x);
+                  right = Math.max(right, x);
+                  top = Math.min(top, y);
+                  bottom = Math.max(bottom, y);
                 }
               }
-            if (right < left) throw new Error(`Empty animation cell ${key}`)
-            return { l: left, t: top, w: right - left + 1, h: bottom - top + 1 }
-          })
-        )
-        const placements = layoutFrames(key, boxes)
+            if (right < left) throw new Error(`Empty animation cell ${key}`);
+            return { l: left, t: top, w: right - left + 1, h: bottom - top + 1 };
+          }),
+        );
+        const placements = layoutFrames(key, boxes);
         if (profiles[key])
-          originalSkullHeights[key] = placements[1][0].scale * profiles[key].directions[1].skull
+          originalSkullHeights[key] = placements[1][0].scale * profiles[key].directions[1].skull;
         sheets[key] = boxes.map((row, r) =>
           row.map((box, c) => {
-            const tile = document.createElement('canvas') as ArtCanvas
-            tile.width = tile.height = 256
-            const ctx = tile.getContext('2d')!
-            ctx.imageSmoothingEnabled = false
-            const { x, y, w, h } = placements[r][c]
-            ctx.drawImage(source, box.l, box.t, box.w, box.h, x, y, w, h)
-            tile.artBounds = { x, y, w, h }
-            return tile
-          })
-        )
-        resolve()
+            const tile = document.createElement('canvas') as ArtCanvas;
+            tile.width = tile.height = 256;
+            const ctx = tile.getContext('2d')!;
+            ctx.imageSmoothingEnabled = false;
+            const { x, y, w, h } = placements[r][c];
+            ctx.drawImage(source, box.l, box.t, box.w, box.h, x, y, w, h);
+            tile.artBounds = { x, y, w, h };
+            return tile;
+          }),
+        );
+        resolve();
       } catch (error) {
-        reject(error)
+        reject(error);
       }
-    }
-    image.src = assets[key as keyof typeof assets]
-  })
+    };
+    image.src = assets[key as keyof typeof assets];
+  });
 }
 
-const petKeys = ['minky', 'mongsil'] as const
+const petKeys = ['minky', 'mongsil'] as const;
 async function actionSheet(key: string, facing: 'left' | 'right', panel: MotionPanel) {
-  const image = new Image()
-  image.src = `/pets/${panel}/${key}-${facing}.webp`
-  await image.decode()
-  const source = document.createElement('canvas')
-  source.width = image.width
-  source.height = image.height
-  const context = source.getContext('2d', { willReadFrequently: true })!
-  context.drawImage(image, 0, 0)
-  const pixels = context.getImageData(0, 0, image.width, image.height)
+  const image = new Image();
+  image.src = assetUrl(`/pets/${panel}/${key}-${facing}.webp`);
+  await image.decode();
+  const source = document.createElement('canvas');
+  source.width = image.width;
+  source.height = image.height;
+  const context = source.getContext('2d', { willReadFrequently: true })!;
+  context.drawImage(image, 0, 0);
+  const pixels = context.getImageData(0, 0, image.width, image.height);
   // Generated key-color is background, never part of the animal's coat.
   for (let i = 0; i < pixels.data.length; i += 4) {
-    const [r, g, b] = pixels.data.subarray(i, i + 3)
-    if (Math.min(r, b) - g > 45 && r > 110 && b > 110) pixels.data[i + 3] = 0
+    const [r, g, b] = pixels.data.subarray(i, i + 3);
+    if (Math.min(r, b) - g > 45 && r > 110 && b > 110) pixels.data[i + 3] = 0;
   }
-  correctMotionPixels(key, facing, panel, pixels.data, image.width, image.height)
-  context.putImageData(pixels, 0, 0)
+  correctMotionPixels(key, facing, panel, pixels.data, image.width, image.height);
+  context.putImageData(pixels, 0, 0);
   const boxes = Array.from({ length: 4 }, (_, row) =>
     Array.from({ length: 4 }, (_, col) => {
       const sx = Math.round((col * image.width) / 4),
-        ex = Math.round(((col + 1) * image.width) / 4)
+        ex = Math.round(((col + 1) * image.width) / 4);
       const sy = Math.round((row * image.height) / 4),
-        ey = Math.round(((row + 1) * image.height) / 4)
+        ey = Math.round(((row + 1) * image.height) / 4);
       let l = ex,
         t = ey,
         right = -1,
         bottom = -1,
-        largest = 0
+        largest = 0;
       const cw = ex - sx,
         ch = ey - sy,
-        seen = new Uint8Array(cw * ch)
+        seen = new Uint8Array(cw * ch);
       // Ignore detached key-color compression specks when measuring the animal.
       // This preserves the rendered body and prevents a stray pixel moving its feet.
       for (let start = 0; start < seen.length; start++) {
-        if (seen[start]) continue
-        const queue = [start]
-        seen[start] = 1
+        if (seen[start]) continue;
+        const queue = [start];
+        seen[start] = 1;
         let count = 0,
           cl = ex,
           ct = ey,
           cr = -1,
-          cb = -1
+          cb = -1;
         for (let n = 0; n < queue.length; n++) {
           const index = queue[n],
             x = sx + (index % cw),
-            y = sy + Math.floor(index / cw)
-          if (pixels.data[(y * image.width + x) * 4 + 3] <= 128) continue
-          count++
-          cl = Math.min(cl, x)
-          ct = Math.min(ct, y)
-          cr = Math.max(cr, x)
-          cb = Math.max(cb, y)
+            y = sy + Math.floor(index / cw);
+          if (pixels.data[(y * image.width + x) * 4 + 3] <= 128) continue;
+          count++;
+          cl = Math.min(cl, x);
+          ct = Math.min(ct, y);
+          cr = Math.max(cr, x);
+          cb = Math.max(cb, y);
           for (const next of [
             index % cw ? index - 1 : -1,
             index % cw < cw - 1 ? index + 1 : -1,
@@ -153,97 +154,97 @@ async function actionSheet(key: string, facing: 'left' | 'right', panel: MotionP
             index + cw,
           ]) {
             if (next >= 0 && next < seen.length && !seen[next]) {
-              seen[next] = 1
-              queue.push(next)
+              seen[next] = 1;
+              queue.push(next);
             }
           }
         }
         if (count > largest) {
-          largest = count
-          l = cl
-          t = ct
-          right = cr
-          bottom = cb
+          largest = count;
+          l = cl;
+          t = ct;
+          right = cr;
+          bottom = cb;
         }
       }
-      if (right < l) throw new Error(`Missing action keypose ${key}/${facing}/${row}/${col}`)
-      return { l, t, w: right - l + 1, h: bottom - t + 1 }
-    })
-  )
-  motionSources.push({ key, facing, panel, source, boxes })
+      if (right < l) throw new Error(`Missing action keypose ${key}/${facing}/${row}/${col}`);
+      return { l, t, w: right - l + 1, h: bottom - t + 1 };
+    }),
+  );
+  motionSources.push({ key, facing, panel, source, boxes });
 }
 
 function registerMotionSheets() {
   for (const key of petKeys) {
-    const sources = motionSources.filter(item => item.key === key)
-    if (!sources.length) continue
+    const sources = motionSources.filter((item) => item.key === key);
+    if (!sources.length) continue;
     const placements = layoutMotionFrames(
       key,
-      sources.map(item => ({
+      sources.map((item) => ({
         ...item,
         sourceHeight: item.source.height,
       })),
-      originalSkullHeights[key]
-    )
-    const reference = sources[0]
+      originalSkullHeights[key],
+    );
+    const reference = sources[0];
     movementScales[key] =
       (placements[0][0][0].scale *
         motionSkulls[key][reference.facing][reference.panel] *
         reference.source.height) /
       1254 /
-      originalSkullHeights[key]
+      originalSkullHeights[key];
     for (const [index, { facing, panel, source, boxes }] of sources.entries()) {
       actions[`${key}-${facing}-${panel}`] = boxes.map((row, r) =>
         row.map((box, c) => {
-          const tile = document.createElement('canvas') as ArtCanvas
-          tile.width = tile.height = 256
-          const { x, y, w, h } = placements[index][r][c]
+          const tile = document.createElement('canvas') as ArtCanvas;
+          tile.width = tile.height = 256;
+          const { x, y, w, h } = placements[index][r][c];
           if (panel === 'gait' && r === 1 && c === 0) {
             // Forward toe of the planted walking pose, ignoring head and tail.
-            const data = source.getContext('2d')!.getImageData(box.l, box.t, box.w, box.h).data
-            let toe = facing === 'right' ? 0 : box.w - 1
+            const data = source.getContext('2d')!.getImageData(box.l, box.t, box.w, box.h).data;
+            let toe = facing === 'right' ? 0 : box.w - 1;
             for (let py = Math.floor(box.h * 0.84); py < box.h; py++)
               for (let px = 0; px < box.w; px++) {
                 if (data[(py * box.w + px) * 4 + 3] > 128)
-                  toe = facing === 'right' ? Math.max(toe, px) : Math.min(toe, px)
+                  toe = facing === 'right' ? Math.max(toe, px) : Math.min(toe, px);
               }
-            registerPawAnchor(key, facing, x + (w * toe) / box.w, ART_SPACE.feet)
+            registerPawAnchor(key, facing, x + (w * toe) / box.w, ART_SPACE.feet);
           }
-          tile.getContext('2d')!.drawImage(source, box.l, box.t, box.w, box.h, x, y, w, h)
-          tile.artBounds = { x, y, w, h }
-          return tile
-        })
-      )
+          tile.getContext('2d')!.drawImage(source, box.l, box.t, box.w, box.h, x, y, w, h);
+          tile.artBounds = { x, y, w, h };
+          return tile;
+        }),
+      );
     }
   }
-  motionSources.length = 0
+  motionSources.length = 0;
 }
 export const artworkReady = Promise.all([
-  ...petKeys.map(key => sheet(key)),
+  ...petKeys.map((key) => sheet(key)),
   sheet('treats', 1, 2),
   ...(motionArtworkEnabled
-    ? petKeys.flatMap(key =>
-        (['actions', 'rest', 'detail', 'gait'] as const).flatMap(panel => [
+    ? petKeys.flatMap((key) =>
+        (['actions', 'rest', 'detail', 'gait'] as const).flatMap((panel) => [
           actionSheet(key, 'right', panel),
           actionSheet(key, 'left', panel),
-        ])
+        ]),
       )
     : []),
 ])
   .then(registerMotionSheets)
   .catch((error: Error) => {
-    loadError = error
-    throw error
-  })
+    loadError = error;
+    throw error;
+  });
 const directionRows: Record<Facing | 'poses', number> = {
   front: 0,
   right: 1,
   back: 2,
   left: 3,
   poses: 4,
-}
+};
 function frame(pet: Pet, key: Facing | 'poses', column: number) {
-  return sheets[petKeys[pet.id]]?.[directionRows[key]]?.[column]
+  return sheets[petKeys[pet.id]]?.[directionRows[key]]?.[column];
 }
 
 export function paintPet(
@@ -251,26 +252,26 @@ export function paintPet(
   pet: Pet,
   time = 0,
   portrait = false,
-  reduced = false
+  reduced = false,
 ) {
-  if (canvas.width !== 256) canvas.width = canvas.height = 256
-  const context = canvas.getContext('2d')!
-  context.clearRect(0, 0, 256, 256)
-  context.imageSmoothingEnabled = false
-  const visibleState = pet.state === 'pet' ? pet.petPose || 'rest' : pet.state
-  const moving = ['run', 'walk', 'coming'].includes(visibleState)
-  const pose: Partial<Record<PetState, number>> = { sit: 0, lie: 1, sleep: 2 }
+  if (canvas.width !== 256) canvas.width = canvas.height = 256;
+  const context = canvas.getContext('2d')!;
+  context.clearRect(0, 0, 256, 256);
+  context.imageSmoothingEnabled = false;
+  const visibleState = pet.state === 'pet' ? pet.petPose || 'rest' : pet.state;
+  const moving = ['run', 'walk', 'coming'].includes(visibleState);
+  const pose: Partial<Record<PetState, number>> = { sit: 0, lie: 1, sleep: 2 };
   let key: Facing | 'poses' = moving ? pet.facing : 'poses',
-    column = moving ? Math.floor(pet.stride * 4) % 4 : (pose[visibleState] ?? 3)
+    column = moving ? Math.floor(pet.stride * 4) % 4 : (pose[visibleState] ?? 3);
   if (portrait) {
-    key = 'front'
-    column = 0
+    key = 'front';
+    column = 0;
   }
   if (pet.state === 'rising') {
-    key = 'poses'
-    column = pet.timer > 0.24 ? (pose[pet.riseFrom || 'rest'] ?? 0) : 3
+    key = 'poses';
+    column = pet.timer > 0.24 ? (pose[pet.riseFrom || 'rest'] ?? 0) : 3;
   }
-  const facing = pet.facing === 'left' ? 'left' : 'right'
+  const facing = pet.facing === 'left' ? 'left' : 'right';
   const passive = moving
     ? visibleState === 'walk'
       ? 'walk'
@@ -283,67 +284,67 @@ export function paintPet(
           ? 'lie'
           : visibleState === 'sit'
             ? 'sit'
-            : 'idle'
+            : 'idle';
   const phase = pet.motion
     ? motionFrame(pet.motion)
-    : passiveFrame(passive, moving ? pet.stride * 8 : time * (passive === 'mouth' ? 7 : 3))
-  const clip = motionKeypose(pet.motion?.id ?? passive, phase)
-  const frontCall = frontCallArtwork(pet.facing, visibleState, pet.motion?.id)
+    : passiveFrame(passive, moving ? pet.stride * 8 : time * (passive === 'mouth' ? 7 : 3));
+  const clip = motionKeypose(pet.motion?.id ?? passive, phase);
+  const frontCall = frontCallArtwork(pet.facing, visibleState, pet.motion?.id);
   if (frontCall) {
-    key = 'front'
-    column = 0
+    key = 'front';
+    column = 0;
   }
   const directionalMovement =
-    movementArtwork(pet.facing, moving, Boolean(pet.motion)) === 'original'
+    movementArtwork(pet.facing, moving, Boolean(pet.motion)) === 'original';
   const tile =
     portrait || !motionArtworkEnabled || directionalMovement || frontCall
       ? frame(pet, key, column)
-      : actions[`${pet.key}-${facing}-${clip.panel}`]?.[clip.row]?.[clip.column]
-  if (!tile) return
+      : actions[`${pet.key}-${facing}-${clip.panel}`]?.[clip.row]?.[clip.column];
+  if (!tile) return;
   if (!portrait)
     pet.observation?.shown(
       pet.id,
       directionalMovement || frontCall
         ? `original:${key}:${column}`
         : `${pet.motion?.id ?? passive}:${facing}:${clip.panel}:${clip.row}:${clip.column}`,
-      time
-    )
-  context.fillStyle = '#41612638'
-  context.beginPath()
-  context.ellipse(ART_SPACE.center, ART_SPACE.shadow, 65, 11, 0, 0, Math.PI * 2)
-  context.fill()
+      time,
+    );
+  context.fillStyle = '#41612638';
+  context.beginPath();
+  context.ellipse(ART_SPACE.center, ART_SPACE.shadow, 65, 11, 0, 0, Math.PI * 2);
+  context.fill();
   const movementScale =
     (directionalMovement || frontCall) && motionArtworkEnabled && !portrait
       ? (movementScales[pet.key] ?? 1) * directionalBodyFactor(pet.key, pet.facing)
-      : 1
+      : 1;
   const offsetX = 128 * (1 - movementScale),
-    offsetY = ART_SPACE.feet * (1 - movementScale)
+    offsetY = ART_SPACE.feet * (1 - movementScale);
   // Two tile pixels of slow breathing at most; feet stay registered to the ground.
   const breath =
     !reduced && visibleState === 'sleep' && !pet.motion?.id
       ? (1 + Math.sin((time * 2 * Math.PI) / 4 + pet.id)) * 0.005
-      : 0
+      : 0;
   const bodyScaleY = movementScale * (1 + breath),
-    bodyOffsetY = ART_SPACE.feet * (1 - bodyScaleY)
-  context.drawImage(tile, offsetX, bodyOffsetY, 256 * movementScale, 256 * bodyScaleY)
+    bodyOffsetY = ART_SPACE.feet * (1 - bodyScaleY);
+  context.drawImage(tile, offsetX, bodyOffsetY, 256 * movementScale, 256 * bodyScaleY);
   if (pet.state === 'eat' && !pet.motion) {
-    const treat = sheets.treats?.[0]?.[pet.id < 2 ? 1 : 0]
-    const b = tile.artBounds
-    const food = treat?.artBounds
+    const treat = sheets.treats?.[0]?.[pet.id < 2 ? 1 : 0];
+    const b = tile.artBounds;
+    const food = treat?.artBounds;
     if (treat && b && food) {
-      const x = b.x + b.w * (facing === 'left' ? 0.06 : 0.94)
-      const y = b.y + b.h * treatMouthHeight[pet.key]
-      const width = pet.id < 2 ? 34 : 38
-      const height = width * (food.h / food.w)
-      context.save()
-      context.translate(x, y)
-      if (facing === 'right') context.scale(-1, 1)
+      const x = b.x + b.w * (facing === 'left' ? 0.06 : 0.94);
+      const y = b.y + b.h * treatMouthHeight[pet.key];
+      const width = pet.id < 2 ? 34 : 38;
+      const height = width * (food.h / food.w);
+      context.save();
+      context.translate(x, y);
+      if (facing === 'right') context.scale(-1, 1);
       // Crop transparent padding so the visible snack starts just below the mouth.
-      context.drawImage(treat, food.x, food.y, food.w, food.h, 3 - width, 0, width, height)
-      context.restore()
+      context.drawImage(treat, food.x, food.y, food.w, food.h, 3 - width, 0, width, height);
+      context.restore();
     }
   }
-  const b = tile.artBounds
+  const b = tile.artBounds;
   return b
     ? {
         x: offsetX + b.x * movementScale,
@@ -351,6 +352,6 @@ export function paintPet(
         w: b.w * movementScale,
         h: b.h * movementScale,
       }
-    : undefined
+    : undefined;
 }
-export const artworkError = () => loadError
+export const artworkError = () => loadError;

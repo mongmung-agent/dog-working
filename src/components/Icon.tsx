@@ -3,5 +3,5 @@ export function Icon({ name }: { name: string }) {
     <svg aria-hidden="true">
       <use href={`#i-${name}`} />
     </svg>
-  )
+  );
 }

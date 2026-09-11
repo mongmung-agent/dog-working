@@ -1,21 +1,21 @@
 /** Shared physical vocabulary. Character identity must never change these cells. */
-export const MOTION_DIRECTIONS = ['right', 'left'] as const
-export type MotionDirection = (typeof MOTION_DIRECTIONS)[number]
-export type Posture = 'stand' | 'sit' | 'lie' | 'asleep'
-type Frames = readonly [string, string, string, string, string, string, string, string]
+export const MOTION_DIRECTIONS = ['right', 'left'] as const;
+export type MotionDirection = (typeof MOTION_DIRECTIONS)[number];
+export type Posture = 'stand' | 'sit' | 'lie' | 'asleep';
+type Frames = readonly [string, string, string, string, string, string, string, string];
 type Clip = {
-  row: number
-  from: Posture
-  to: Posture
-  seconds: number
-  frames: Frames
+  row: number;
+  from: Posture;
+  to: Posture;
+  seconds: number;
+  frames: Frames;
   /** Inclusive zero-based loop; entry frames are played once. */
-  loop?: readonly [number, number]
+  loop?: readonly [number, number];
   /** Zero-based frame held until the action releases it. */
-  hold?: number
-  contact?: number
-  safeExit: number
-}
+  hold?: number;
+  contact?: number;
+  safeExit: number;
+};
 
 export const MOTION_SPEC = {
   idle: {
@@ -312,34 +312,34 @@ export const MOTION_SPEC = {
     safeExit: 7,
     frames: ['서기', '서기', '한 발 후퇴', '한 발 후퇴', '교대 후퇴', '교대 후퇴', '서기', '서기'],
   },
-} as const satisfies Record<string, Clip>
+} as const satisfies Record<string, Clip>;
 
-export type MotionId = keyof typeof MOTION_SPEC
+export type MotionId = keyof typeof MOTION_SPEC;
 export const MOTION_GRID = {
   columns: 8,
   rows: 17,
   cellSize: 256,
   groundY: 242,
   shadowY: 238,
-} as const
+} as const;
 
 /** Returns an atlas slot without knowing which character will be rendered. */
 export function motionCell(id: MotionId, column: number) {
   if (!Number.isInteger(column) || column < 0 || column >= MOTION_GRID.columns) {
-    throw new RangeError('Motion column must be an integer between 0 and 7')
+    throw new RangeError('Motion column must be an integer between 0 and 7');
   }
-  return { row: MOTION_SPEC[id].row, column }
+  return { row: MOTION_SPEC[id].row, column };
 }
 
 /** Pose contracts are checked before atlas approval and runtime integration. */
 export function validateMotionSequence(ids: readonly MotionId[], start: Posture = 'stand') {
-  let posture = start
+  let posture = start;
   for (const id of ids) {
-    const clip: Clip = MOTION_SPEC[id]
-    if (clip.from !== posture) throw new Error(`${id} requires ${clip.from}, received ${posture}`)
-    posture = clip.to
+    const clip: Clip = MOTION_SPEC[id];
+    if (clip.from !== posture) throw new Error(`${id} requires ${clip.from}, received ${posture}`);
+    posture = clip.to;
   }
-  return posture
+  return posture;
 }
 
 /** Design vocabulary for interaction poses, not executable behavior scripts.
@@ -359,4 +359,4 @@ export const INTERACTION_MOTIONS = {
   trust: ['sit', 'lie', 'belly'],
   rest: ['sit', 'lie', 'sleep'],
   space: ['attend', 'retreat', 'walk'],
-} as const satisfies Record<string, readonly MotionId[]>
+} as const satisfies Record<string, readonly MotionId[]>;

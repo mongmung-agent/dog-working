@@ -1,21 +1,22 @@
-import { useAtom, useAtomValue, useSetAtom } from 'jotai'
-import { INFO } from '../game/engine/core'
-import { THEMES } from '../game/const/themes'
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
+import { INFO } from '../game/engine/core';
+import { THEMES } from '../game/const/themes';
 import {
   emotionGuideOpenAtom,
   meadowControllerAtom,
   meadowUiAtom,
   settingsOpenAtom,
   toolsOpenAtom,
-} from '../state/meadow'
-import { Icon } from './Icon'
+} from '../state/meadow';
+import { assetUrl } from '../game/base-path';
+import { Icon } from './Icon';
 
 export function FloatingControls() {
-  const { preferences } = useAtomValue(meadowUiAtom)
-  const controller = useAtomValue(meadowControllerAtom)
-  const setToolsOpen = useSetAtom(toolsOpenAtom)
-  const setSettingsOpen = useSetAtom(settingsOpenAtom)
-  const soundLabel = preferences.sound ? '소리 끄기' : '소리 켜기'
+  const { preferences } = useAtomValue(meadowUiAtom);
+  const controller = useAtomValue(meadowControllerAtom);
+  const setToolsOpen = useSetAtom(toolsOpenAtom);
+  const setSettingsOpen = useSetAtom(settingsOpenAtom);
+  const soundLabel = preferences.sound ? '소리 끄기' : '소리 켜기';
   return (
     <div className="floating-controls" aria-label="소리와 설정">
       <button
@@ -33,23 +34,23 @@ export function FloatingControls() {
         className="icon-button"
         aria-label="설정"
         onClick={() => {
-          setToolsOpen(false)
-          controller?.closeCalls()
-          controller?.setOverlayOpen(true)
-          setSettingsOpen(true)
+          setToolsOpen(false);
+          controller?.closeCalls();
+          controller?.setOverlayOpen(true);
+          setSettingsOpen(true);
         }}
       >
         <Icon name="settings" />
       </button>
     </div>
-  )
+  );
 }
 
 export function MeadowDock() {
-  const setGuideOpen = useSetAtom(emotionGuideOpenAtom)
-  const [toolsOpen, setToolsOpen] = useAtom(toolsOpenAtom)
-  const ui = useAtomValue(meadowUiAtom)
-  const controller = useAtomValue(meadowControllerAtom)
+  const setGuideOpen = useSetAtom(emotionGuideOpenAtom);
+  const [toolsOpen, setToolsOpen] = useAtom(toolsOpenAtom);
+  const ui = useAtomValue(meadowUiAtom);
+  const controller = useAtomValue(meadowControllerAtom);
   return (
     <>
       <footer className="dock">
@@ -98,15 +99,15 @@ export function MeadowDock() {
             aria-pressed={ui.ballPresent}
             onClick={() => controller?.toggleBall()}
           >
-            <img src="/toys/ball.svg?v=2" width="40" height="40" alt="" />
+            <img src={assetUrl('/toys/ball.svg?v=2')} width="40" height="40" alt="" />
             <span>축구공</span>
           </button>
           <button
             className="call-choice guide-choice"
             aria-haspopup="dialog"
             onClick={() => {
-              controller?.setOverlayOpen(true, false)
-              setGuideOpen(true)
+              controller?.setOverlayOpen(true, false);
+              setGuideOpen(true);
             }}
           >
             <span className="guide-book" aria-hidden="true">
@@ -122,8 +123,8 @@ export function MeadowDock() {
             aria-controls="call-controls"
             aria-expanded={ui.callsOpen}
             onClick={() => {
-              setToolsOpen(false)
-              controller?.toggleCalls()
+              setToolsOpen(false);
+              controller?.toggleCalls();
             }}
             disabled={!ui.started}
           >
@@ -136,8 +137,8 @@ export function MeadowDock() {
             className={`tool${!ui.callsOpen && !toolsOpen && ui.tool === 'pet' ? ' selected' : ''}`}
             aria-pressed={ui.tool === 'pet'}
             onClick={() => {
-              setToolsOpen(false)
-              controller?.setTool('pet')
+              setToolsOpen(false);
+              controller?.setTool('pet');
             }}
           >
             <Icon name="pet" />
@@ -149,8 +150,8 @@ export function MeadowDock() {
             className={`tool${!ui.callsOpen && !toolsOpen && ui.tool === 'treat' ? ' selected' : ''}`}
             aria-pressed={ui.tool === 'treat'}
             onClick={() => {
-              setToolsOpen(false)
-              controller?.setTool('treat')
+              setToolsOpen(false);
+              controller?.setTool('treat');
             }}
           >
             <Icon name="treat" />
@@ -162,8 +163,8 @@ export function MeadowDock() {
             aria-controls="tool-controls"
             aria-expanded={toolsOpen}
             onClick={() => {
-              controller?.closeCalls()
-              setToolsOpen(open => !open)
+              controller?.closeCalls();
+              setToolsOpen((open) => !open);
             }}
             disabled={!ui.started}
           >
@@ -172,9 +173,9 @@ export function MeadowDock() {
           </button>
         </nav>
         <p className="dock-help theme-name">
-          {THEMES.find(theme => theme.id === ui.preferences.theme)?.name}
+          {THEMES.find((theme) => theme.id === ui.preferences.theme)?.name}
         </p>
       </footer>
     </>
-  )
+  );
 }

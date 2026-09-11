@@ -1,22 +1,22 @@
-import { useEffect, useId, useRef } from 'react'
-import { useAtom, useAtomValue } from 'jotai'
-import { EMOTIONS } from '../game/const/emotions'
-import { emotionGuideOpenAtom, meadowControllerAtom } from '../state/meadow'
-import { Icon } from './Icon'
+import { useEffect, useId, useRef } from 'react';
+import { useAtom, useAtomValue } from 'jotai';
+import { EMOTIONS } from '../game/const/emotions';
+import { emotionGuideOpenAtom, meadowControllerAtom } from '../state/meadow';
+import { Icon } from './Icon';
 
 export function EmotionGuideDialog() {
-  const [open, setOpen] = useAtom(emotionGuideOpenAtom)
-  const controller = useAtomValue(meadowControllerAtom)
-  const dialog = useRef<HTMLDialogElement>(null)
-  const titleId = useId()
+  const [open, setOpen] = useAtom(emotionGuideOpenAtom);
+  const controller = useAtomValue(meadowControllerAtom);
+  const dialog = useRef<HTMLDialogElement>(null);
+  const titleId = useId();
   const close = () => {
-    setOpen(false)
-    controller?.setOverlayOpen(false)
-  }
+    setOpen(false);
+    controller?.setOverlayOpen(false);
+  };
   useEffect(() => {
-    if (open && !dialog.current?.open) dialog.current?.showModal()
-    if (!open && dialog.current?.open) dialog.current.close()
-  }, [open])
+    if (open && !dialog.current?.open) dialog.current?.showModal();
+    if (!open && dialog.current?.open) dialog.current.close();
+  }, [open]);
 
   return (
     <dialog
@@ -24,20 +24,20 @@ export function EmotionGuideDialog() {
       className="sheet emotion-guide"
       aria-labelledby={titleId}
       onClose={close}
-      onCancel={event => {
-        event.preventDefault()
-        close()
+      onCancel={(event) => {
+        event.preventDefault();
+        close();
       }}
-      onClick={event => {
+      onClick={(event) => {
         if (event.target === dialog.current) {
-          const bounds = dialog.current.getBoundingClientRect()
+          const bounds = dialog.current.getBoundingClientRect();
           if (
             event.clientX < bounds.left ||
             event.clientX > bounds.right ||
             event.clientY < bounds.top ||
             event.clientY > bounds.bottom
           )
-            close()
+            close();
         }
       }}
     >
@@ -57,5 +57,5 @@ export function EmotionGuideDialog() {
         ))}
       </dl>
     </dialog>
-  )
+  );
 }

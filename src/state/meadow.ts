@@ -1,5 +1,5 @@
-import { atom } from 'jotai'
-import type { MeadowController, MeadowUiState } from '../game/runtime'
+import { atom } from 'jotai';
+import type { MeadowController, MeadowUiState } from '../game/runtime';
 
 export const meadowUiAtom = atom<MeadowUiState>({
   preferences: {
@@ -18,11 +18,11 @@ export const meadowUiAtom = atom<MeadowUiState>({
   toast: '',
   themeStatus: '마음에 드는 풍경을 골라 주세요.',
   themeLoading: false,
-})
+});
 
-export const settingsOpenAtom = atom(false)
-export const meadowControllerAtom = atom<MeadowController | null>(null)
+export const settingsOpenAtom = atom(false);
+export const meadowControllerAtom = atom<MeadowController | null>(null);
 
-export const toolsOpenAtom = atom(false)
+export const toolsOpenAtom = atom(false);
 
-export const emotionGuideOpenAtom = atom(false)
+export const emotionGuideOpenAtom = atom(false);

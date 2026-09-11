@@ -30,5 +30,5 @@ export function Symbols() {
         </symbol>
       </defs>
     </svg>
-  )
+  );
 }

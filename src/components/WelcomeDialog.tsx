@@ -1,11 +1,11 @@
-import { Icon } from './Icon'
-import { useAtomValue } from 'jotai'
-import { meadowControllerAtom, meadowUiAtom } from '../state/meadow'
+import { Icon } from './Icon';
+import { useAtomValue } from 'jotai';
+import { meadowControllerAtom, meadowUiAtom } from '../state/meadow';
 
 export function WelcomeDialog() {
-  const ui = useAtomValue(meadowUiAtom)
-  const controller = useAtomValue(meadowControllerAtom)
-  const muted = !ui.preferences.sound
+  const ui = useAtomValue(meadowUiAtom);
+  const controller = useAtomValue(meadowControllerAtom);
+  const muted = !ui.preferences.sound;
   return (
     <div
       id="welcome"
@@ -59,5 +59,5 @@ export function WelcomeDialog() {
         </div>
       </div>
     </div>
-  )
+  );
 }

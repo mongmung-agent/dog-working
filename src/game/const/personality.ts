@@ -1,4 +1,4 @@
-import {AnimalKey} from "../core";
+import { AnimalKey } from '../core';
 
 /** Behavioral tuning only: no artwork, palette, species, or sprite geometry. */
 const common = {
@@ -11,7 +11,7 @@ const common = {
   ballCaution: false,
   preferredBuddy: null as AnimalKey | null,
   preferLie: false,
-}
+};
 export const PERSONALITIES = {
   minky: {
     ...common,
@@ -38,14 +38,14 @@ export const PERSONALITIES = {
 } as const satisfies Record<
   AnimalKey,
   typeof common & {
-    initiative: number
-    acceptance: number
-    edgeRest: number
-    energy: number
-    shy: boolean
-    ballInterest: number
+    initiative: number;
+    acceptance: number;
+    edgeRest: number;
+    energy: number;
+    shy: boolean;
+    ballInterest: number;
   }
->
+>;
 export const RELATIONSHIPS = [
   [
     { affinity: 0.5, preference: 1 },
@@ -71,4 +71,4 @@ export const RELATIONSHIPS = [
     { affinity: 0.6, preference: 1 },
     { affinity: 0.5, preference: 1 },
   ],
-] as const
+] as const;

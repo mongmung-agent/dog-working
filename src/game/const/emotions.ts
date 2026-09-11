@@ -25,6 +25,6 @@ export const EMOTIONS = {
   startled: { emoji: '😯', label: '조금 놀랐어요' },
   expectation: { emoji: '✨', label: '같이 해볼까?' },
   relieved: { emoji: '😌', label: '친구가 곁에 있어 안심돼요' },
-} as const satisfies Record<string, { emoji: string; label: string }>
+} as const satisfies Record<string, { emoji: string; label: string }>;
 
-export type ExpressionKind = keyof typeof EMOTIONS
+export type ExpressionKind = keyof typeof EMOTIONS;
