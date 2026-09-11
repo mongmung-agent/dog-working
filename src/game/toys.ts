@@ -12,9 +12,9 @@ export type Ball = {
 };
 type Side = 'left' | 'right';
 // Rendered 256px tile coordinates, registered after crop/scale/warp in art.ts.
-const noseAnchors: Record<string, Partial<Record<Side, { x: number; y: number }>>> = {};
-export function registerNoseAnchor(key: string, facing: Side, x: number, y: number) {
-  (noseAnchors[key] ??= {})[facing] = { x: (x - 128) / 256, y: (y - 128) / 256 };
+const pawAnchors: Record<string, Partial<Record<Side, { x: number; y: number }>>> = {};
+export function registerPawAnchor(key: string, facing: Side, x: number, y: number) {
+  (pawAnchors[key] ??= {})[facing] = { x: (x - 128) / 256, y: (y - 128) / 256 };
 }
 export const ballVisualScale = (y: number, height: number) =>
   0.72 + 0.28 * Math.max(0, Math.min(1, y / height));
@@ -29,7 +29,7 @@ export class Toys {
   private until = 0;
   private turns = 0;
   private nextThink = 0;
-  private cooldown = [0, 0];
+  private cooldown = [0, 0, 0, 0];
   private shyUntil = 0;
   private contactSince = 0;
   private lastExpression = -10;
@@ -55,7 +55,7 @@ export class Toys {
         p.speed = 0;
         p.timer = 3;
         p.decisionUntil = this.world.time + 3;
-        this.cooldown[p.id] = this.world.time + 12;
+        this.cooldown[p.id] = this.world.time + 6;
       }
     this.actor = this.buddy = undefined;
     this.turns = 0;
@@ -150,9 +150,9 @@ export class Toys {
             y = p.y;
           // Perspective depends on the destination, not the actor's starting depth.
           for (let i = 0; i < 12; i++) {
-            const nose = this.nosePoint({ ...p, x, y }, facing);
-            x += ball.x - (facing === 'right' ? 1 : -1) * radius - nose.x;
-            y += ball.y - ball.z - nose.y;
+            const paw = this.pawPoint({ ...p, x, y }, facing);
+            x += ball.x - (facing === 'right' ? 1 : -1) * radius * 0.75 - paw.x;
+            y += ball.y + radius - this.groundY({ ...p, x, y });
           }
           return { x, y, facing };
         })
@@ -161,13 +161,16 @@ export class Toys {
       null
     );
   }
-  nosePoint(p: Pet, facing: Side = p.facing === 'left' ? 'left' : 'right') {
-    const anchor = noseAnchors[p.key]?.[facing] ?? {
-      x: facing === 'right' ? 0.36 : -0.36,
-      y: 0.04,
+  pawPoint(p: Pet, facing: Side = p.facing === 'left' ? 'left' : 'right') {
+    const anchor = pawAnchors[p.key]?.[facing] ?? {
+      x: facing === 'right' ? 0.3 : -0.3,
+      y: (242 - 128) / 256,
     };
     const size = this.world.size * this.world.scale(p);
     return { x: p.x + size * anchor.x, y: p.y + size * anchor.y };
+  }
+  groundY(p: Pet) {
+    return p.y + (this.world.size * this.world.scale(p) * (242 - 128)) / 256;
   }
   private available(p: Pet) {
     return (
@@ -229,7 +232,7 @@ export class Toys {
       for (const p of w.pets) {
         if (this.owns(p.id) || p.held) continue;
         const dx = ball.x - p.x,
-          dy = ball.y - (p.y + w.size * w.scale(p) * 0.22),
+          dy = ball.y - (this.groundY(p) - ballRadius(ball.y, w.height)),
           d = Math.hypot(dx, dy),
           r = w.size * w.scale(p) * 0.2 + 14;
         if (d >= r) continue;
@@ -244,7 +247,10 @@ export class Toys {
           ball.vz = Math.max(ball.vz, Math.min(120, -toward * 0.4));
         }
         ball.x = Math.max(b.left, Math.min(b.right, p.x + nx * r));
-        ball.y = Math.max(b.top, Math.min(b.bottom, p.y + w.size * w.scale(p) * 0.22 + ny * r));
+        ball.y = Math.max(
+          b.top,
+          Math.min(b.bottom, this.groundY(p) - ballRadius(ball.y, w.height) + ny * r),
+        );
       }
     const friction = Math.exp(-(ball.z > 0 ? 0.15 : 2.2) * dt);
     ball.vx *= friction;
@@ -272,7 +278,7 @@ export class Toys {
       this.shyUntil = now + 12;
       this.cooldown[0] = now + 12;
     }
-    if (ball.z > 16) {
+    if (ball.z > 2) {
       this.contactSince = 0;
       return;
     }
@@ -290,15 +296,14 @@ export class Toys {
         this.buddy.timer = 2;
         this.buddy.socialNeed = Math.max(0, this.buddy.socialNeed - dt * 0.025);
       }
+      if (a.motion?.id === 'paw' && a.motion.contactEmitted && !a.motion.contactPending) return;
       const contact = this.contact(a);
       if (!contact) {
         this.diagnostics.unreachable++;
         this.release();
         return;
       }
-      const dx = ball.x - a.x,
-        dy = ball.y - a.y,
-        distance = Math.hypot(a.x - contact.x, a.y - contact.y);
+      const distance = Math.hypot(a.x - contact.x, a.y - contact.y);
       if (distance < this.progressDistance - 2) {
         this.progressDistance = distance;
         this.progressAt = now;
@@ -317,11 +322,11 @@ export class Toys {
         a.facing = contact.facing;
         if (!this.contactSince) {
           this.contactSince = now;
-          beginMotion(a, 'nose', 0.7);
+          beginMotion(a, 'paw', 0.7);
         }
       } else {
         this.contactSince = 0;
-        if (a.motion?.id === 'nose') cancelMotion(a, true);
+        if (a.motion?.id === 'paw') cancelMotion(a, true);
       }
       if (this.contactSince && consumeMotionContact(a)) {
         this.contactSince = 0;
@@ -330,8 +335,11 @@ export class Toys {
         this.diagnostics.hits++;
         const target = this.buddy;
         const angle = target
-          ? Math.atan2(target.y - ball.y, target.x - ball.x)
-          : Math.atan2(dy, dx) + (this.random() - 0.5) * 0.8;
+          ? Math.atan2(
+              this.groundY(target) - ballRadius(this.groundY(target), w.height) - ball.y,
+              target.x - ball.x,
+            )
+          : (a.facing === 'right' ? 0 : Math.PI) + (this.random() - 0.5) * 0.25;
         const dribble = !target;
         const force = dribble ? 48 : 95;
         ball.vx = Math.cos(angle) * force;
@@ -347,7 +355,7 @@ export class Toys {
           this.lastExpression = now;
         }
         this.turns++;
-        if (this.turns >= (target ? 4 : 6)) {
+        if (this.turns >= (target ? 16 : 20)) {
           this.release();
           return;
         }
@@ -384,16 +392,19 @@ export class Toys {
         (p) =>
           this.available(p) &&
           this.contact(p) !== null &&
-          Math.hypot(p.x - ball.x, p.y - ball.y) < (p.id === 0 ? 1.3 : 2.5) &&
+          Math.hypot(p.x - ball.x, p.y - ball.y) < w.size * (p.id === 0 ? 1.3 : 3) &&
           !(p.id === 0 && speed > 2),
       )
-      .map((p) => ({ p, weight: [0.06, 0.85][p.id] * (1 - p.fatigue) * (0.4 + p.mind.curiosity) }));
+      .map((p) => ({
+        p,
+        weight: [0.06, 0.85, 1, 0.2][p.id] * (1 - p.fatigue) * (0.4 + p.mind.curiosity),
+      }));
     let n = this.random() * choices.reduce((s, c) => s + c.weight, 0);
     const chosen = choices.find((c) => (n -= c.weight) < 0)?.p;
     if (!chosen) return;
     this.diagnostics.started++;
     this.actor = chosen;
-    this.until = now + 20;
+    this.until = now + 60;
     this.start(chosen);
     const others = w.pets.filter(
       (p) =>
@@ -402,7 +413,8 @@ export class Toys {
         this.contact(p) !== null &&
         Math.hypot(p.x - ball.x, p.y - ball.y) < w.size * 2.2,
     );
-    const preferred = others[0];
+    const preferred =
+      chosen.id === 2 ? others.find((p) => p.id === 3) : others.find((p) => p.id !== 0);
     if (preferred && this.random() < 0.75) {
       this.buddy = preferred;
       preferred.edgeRest = false;

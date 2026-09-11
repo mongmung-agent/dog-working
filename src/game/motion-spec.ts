@@ -215,6 +215,24 @@ export const MOTION_SPEC = {
       '서기',
     ],
   },
+  paw: {
+    row: 16,
+    from: 'stand',
+    to: 'stand',
+    seconds: 0.7,
+    contact: 3,
+    safeExit: 7,
+    frames: [
+      '서기',
+      '앞발 접기',
+      '앞발 내밀기',
+      '지면의 공 밀기',
+      '접지 유지',
+      '앞발 회수',
+      '서기',
+      '서기',
+    ],
+  },
   jump: {
     row: 11,
     from: 'stand',
@@ -297,7 +315,7 @@ export const MOTION_SPEC = {
 } as const satisfies Record<string, Clip>;
 
 export type MotionId = keyof typeof MOTION_SPEC;
-export const MOTION_GRID = { columns: 8, rows: 16, cellSize: 256, groundY: 238 } as const;
+export const MOTION_GRID = { columns: 8, rows: 17, cellSize: 256, groundY: 238 } as const;
 
 /** Returns an atlas slot without knowing which character will be rendered. */
 export function motionCell(id: MotionId, column: number) {
@@ -329,7 +347,7 @@ export const INTERACTION_MOTIONS = {
   explore: ['walk', 'sniff', 'attend'],
   company: ['walk', 'sit', 'lie'],
   comfort: ['walk', 'nose', 'sit', 'lie'],
-  ball: ['attend', 'walk', 'nose'],
+  ball: ['attend', 'walk', 'paw'],
   welcome: ['attend', 'jump', 'idle'],
   trust: ['sit', 'lie', 'belly'],
   rest: ['sit', 'lie', 'sleep'],

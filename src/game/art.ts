@@ -13,7 +13,7 @@ import {
   type ArtBox,
 } from './art-layout';
 import { motionKeypose, motionFrame, type MotionPanel } from './motion';
-import { registerNoseAnchor } from './toys';
+import { registerPawAnchor } from './toys';
 
 type Bounds = { x: number; y: number; w: number; h: number };
 type ArtCanvas = HTMLCanvasElement & { artBounds?: Bounds };
@@ -31,12 +31,6 @@ type MotionSource = {
   boxes: ArtBox[][];
 };
 const motionSources: MotionSource[] = [];
-// Nose tip in the cropped maximum-reach pose (actions R1 C4), after correction.
-// Explicit landmarks exclude ears, tongue and whiskers; left is not mirrored right.
-const noseTips: Record<string, Record<'left' | 'right', [number, number]>> = {
-  minky: { right: [0.905, 0.36], left: [0.095, 0.46] },
-  mongsil: { right: [0.96, 0.29], left: [0.04, 0.155] },
-};
 let loadError: Error | null = null;
 
 function sheet(key: string, rowCount = 5, columnCount = 4) {
@@ -203,9 +197,16 @@ function registerMotionSheets() {
           const tile = document.createElement('canvas') as ArtCanvas;
           tile.width = tile.height = 256;
           const { x, y, w, h } = placements[index][r][c];
-          if (panel === 'actions' && r === 0 && c === 3) {
-            const [nx, ny] = noseTips[key][facing];
-            registerNoseAnchor(key, facing, x + w * nx, y + h * ny);
+          if (panel === 'gait' && r === 1 && c === 0) {
+            // Forward toe of the planted walking pose, ignoring head and tail.
+            const data = source.getContext('2d')!.getImageData(box.l, box.t, box.w, box.h).data;
+            let toe = facing === 'right' ? 0 : box.w - 1;
+            for (let py = Math.floor(box.h * 0.84); py < box.h; py++)
+              for (let px = 0; px < box.w; px++) {
+                if (data[(py * box.w + px) * 4 + 3] > 128)
+                  toe = facing === 'right' ? Math.max(toe, px) : Math.min(toe, px);
+              }
+            registerPawAnchor(key, facing, x + (w * toe) / box.w, 242);
           }
           tile.getContext('2d')!.drawImage(source, box.l, box.t, box.w, box.h, x, y, w, h);
           tile.artBounds = { x, y, w, h };

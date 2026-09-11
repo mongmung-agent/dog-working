@@ -374,6 +374,7 @@ export function startMeadow() {
     world.call(id);
     world.drain().forEach(effect);
     audio?.effect('call');
+    byId<HTMLElement>('arrival').classList.add('visible');
     hint('다가온 친구를 쓰다듬어 주세요');
     toast(id === 'all' ? '얘들아, 이리 와!' : `${INFO[id].name}야, 이리 와!`);
   };
@@ -749,6 +750,7 @@ export function startMeadow() {
         origin: 'top-left; x right; y down',
         started,
         time: world.time,
+        theme: preferences.theme,
         pets: world.pets.map((p) => ({
           id: p.id,
           name: p.name,
@@ -857,22 +859,23 @@ export function startMeadow() {
             }
             render(0);
           }
-          // Reusable contact QA: all four calibrated noses against visible ball edges.
+          // Reusable contact QA: all four grounded paws against visible balls.
           if (query.has('ballContact')) {
             for (const pet of world.pets) {
               const facing = pet.facing === 'left' ? 'left' : 'right',
-                nose = world.toys.nosePoint(pet);
+                paw = world.toys.pawPoint(pet),
+                ground = world.toys.groundY(pet);
               const clone = ballButton.cloneNode(true) as HTMLButtonElement;
               clone.removeAttribute('id');
               clone.hidden = false;
               clone.tabIndex = -1;
               clone.style.pointerEvents = 'none';
-              clone.style.left = `${nose.x + (facing === 'right' ? 1 : -1) * ballRadius(nose.y, world.height)}px`;
-              clone.style.top = `${nose.y}px`;
+              clone.style.left = `${paw.x + (facing === 'right' ? 1 : -1) * ballRadius(ground, world.height) * 0.75}px`;
+              clone.style.top = `${ground - ballRadius(ground, world.height)}px`;
               clone.style.transform = 'translate(-50%,-50%)';
               clone.style.zIndex = '9';
               clone.querySelector('img')!.style.transform =
-                `scale(${ballVisualScale(nose.y, world.height)})`;
+                `scale(${ballVisualScale(ground, world.height)})`;
               field.append(clone);
             }
           }

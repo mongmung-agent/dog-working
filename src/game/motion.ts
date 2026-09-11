@@ -12,6 +12,7 @@ export const ACTION_KEYS = {
   lie: { panel: 'rest', row: 1, frames: [0, 0, 1, 1, 2, 2, 3, 3] },
   sleep: { panel: 'rest', row: 2, frames: [0, 0, 1, 1, 2, 2, 3, 3] },
   rise: { panel: 'rest', row: 3, frames: [0, 0, 1, 1, 2, 2, 3, 3] },
+  paw: { panel: 'gait', row: 1, frames: [0, 1, 3, 0, 0, 1, 0, 0] },
   nose: { panel: 'actions', row: 0, frames: [0, 1, 2, 3, 3, 2, 1, 0] },
   sniff: { panel: 'actions', row: 1, frames: [0, 1, 2, 3, 3, 2, 1, 0] },
   bow: { panel: 'actions', row: 2, frames: [0, 1, 3, 3, 3, 3, 1, 0] },
@@ -29,6 +30,7 @@ export function motionKeypose(
   id: MotionId,
   phase: number,
 ): { panel: MotionPanel; row: number; column: number } {
+  if (id === 'paw' && [0, 6, 7].includes(phase)) return { panel: 'gait', row: 0, column: 0 };
   const clip = ACTION_KEYS[id];
   const stand = { panel: 'gait' as const, row: 0, column: 0 };
   const sit = { panel: 'rest' as const, row: 0, column: 3 };
