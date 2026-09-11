@@ -1,6 +1,66 @@
 @import '../style.css';
 
-#theme-name {
+.statistics-link {
+  width: 100%;
+  padding: 0;
+  background: transparent;
+  text-align: left;
+  font-size: 14px;
+}
+.statistics-link:hover {
+  color: #6b823f;
+}
+.statistics-link span {
+  font-size: 24px;
+}
+.statistics-sheet {
+  width: 420px;
+}
+.statistics-description {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--muted);
+  margin: 16px 0;
+}
+.statistics-list section + section {
+  border-top: 1px solid var(--line);
+  padding-top: 18px;
+  margin-top: 18px;
+}
+.statistics-list h3 {
+  margin: 0 0 10px;
+  font-size: 16px;
+}
+.statistics-list dl {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.9;
+  font-variant-numeric: tabular-nums;
+}
+.statistics-list dl > div {
+  display: flex;
+  gap: 8px;
+}
+.statistics-list dt {
+  min-width: 3em;
+}
+.statistics-list dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.statistics-status {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--muted);
+  margin: 20px 0 0;
+}
+.statistics-sheet .secondary:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.theme-name {
   font-size: 14px;
   white-space: nowrap;
 }
@@ -42,7 +102,7 @@
 }
 .theme-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
 .theme-tile {
@@ -157,14 +217,6 @@
 .play-ball:focus-visible {
   filter: brightness(1.2);
 }
-#ball-toggle img {
-  image-rendering: auto;
-}
-#ball-toggle[aria-pressed='true'] {
-  background: #e0e9cf;
-  box-shadow: inset 0 0 0 2px #7b925d;
-}
-
 .play-ball::before {
   content: '';
   position: absolute;
@@ -178,27 +230,4 @@
   pointer-events: none;
   transform: translateY(var(--ball-height, 0px));
   opacity: var(--shadow-opacity, 1);
-}
-
-/* App-level control: below dock/disclosure (30), above the isolated field. */
-#ball-toggle {
-  position: absolute;
-  right: max(16px, env(safe-area-inset-right));
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 20;
-  width: 48px;
-  height: 48px;
-  background: #faf7e9;
-  border: 1px solid #d3d9bc;
-  box-shadow: 0 3px 10px #34452426;
-}
-#ball-toggle[aria-pressed='true'] {
-  background: #e0e9cf;
-  box-shadow:
-    inset 0 0 0 2px #7b925d,
-    0 3px 10px #34452426;
-}
-#ball-toggle:active {
-  transform: translateY(-50%) scale(0.95);
 }
