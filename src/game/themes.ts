@@ -19,6 +19,12 @@ export const THEMES = [
     name: '도심 공원',
     image: assetUrl('/themes/park.webp'),
   },
+  {
+    id: 'apartment',
+    thumbnail: '/themes/thumbnails/apartment.webp',
+    name: '벚꽃 단지 산책길',
+    image: assetUrl('/themes/apartment.webp'),
+  },
 ] as const;
 export type ThemeId = (typeof THEMES)[number]['id'];
 export const isThemeId = (value: unknown): value is ThemeId =>
